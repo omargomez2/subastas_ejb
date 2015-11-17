@@ -10,8 +10,8 @@ import javax.ejb.Stateless;
 import net.osgg.ejb.entities.Postor;
 import net.osgg.ejb.entities.Puja;
 import net.osgg.ejb.entities.Subasta;
-import net.osgg.ejb.sessions.facades.PujaFacadeLocal;
-import net.osgg.ejb.sessions.facades.SubastaFacadeLocal;
+import net.osgg.ejb.sessions.crud.PujaCRUDLocal;
+import net.osgg.ejb.sessions.crud.SubastaCRUDLocal;
 import net.osgg.exceptions.EntradaNoValidaException;
 import net.osgg.exceptions.FechaHoraNoValidaException;
 import net.osgg.exceptions.SubastasException;
@@ -24,9 +24,9 @@ import net.osgg.exceptions.SubastasException;
 public class SubastadorMgrBean implements SubastadorMgrRemote {
     
     @EJB 
-    private SubastaFacadeLocal subastaFacade;
+    private SubastaCRUDLocal subastaCRUD;
     @EJB
-    private PujaFacadeLocal pujaFacade;
+    private PujaCRUDLocal pujaCRUD;
     @EJB
     private ServiciosMgrLocal serviciosMgr;
 
@@ -64,7 +64,7 @@ public class SubastadorMgrBean implements SubastadorMgrRemote {
         else if (subasta.getFechaHoraInicio() >= subasta.getFechaHoraFin() )
             throw new FechaHoraNoValidaException("La fecha y hora inicial no deben ser mayores que la fecha hora final"); 
         else
-            subastaFacade.create(subasta);
+            subastaCRUD.create(subasta);
     }
     
     
@@ -83,7 +83,7 @@ public class SubastadorMgrBean implements SubastadorMgrRemote {
             notificaciones = notificaciones@pre->including( Notificacion )
      */
     public void adjudicarPuja(Puja puja) throws SubastasException, FechaHoraNoValidaException {
-        subastaG = subastaFacade.find(puja.getIdSubasta());
+        subastaG = subastaCRUD.find(puja.getIdSubasta());
         postorG = serviciosMgr.getPostor(puja.getIdPostor());
         if ( puja.getPrecio() <= serviciosMgr.getPujaUltimoPrecio(puja.getIdSubasta()).getPrecio() )
            throw new SubastasException("El precio de la puja debe ser el mayor"); 
@@ -112,13 +112,13 @@ public class SubastadorMgrBean implements SubastadorMgrRemote {
         notificaciones = notificaciones@pre->including( Notificacion )
      */
     public void aceptarPuja(Puja puja) throws SubastasException {
-        subastaG = subastaFacade.find(puja.getIdSubasta());
+        subastaG = subastaCRUD.find(puja.getIdSubasta());
         postorG = serviciosMgr.getPostor(puja.getIdPostor());     
         if ( puja.getPrecio() <=  serviciosMgr.getPujaUltimoPrecio(puja.getIdSubasta()).getPrecio() )
            throw new SubastasException("El precio de la puja debe ser el mayor"); 
        else {
           puja.setEstado('a');
-          pujaFacade.edit(puja);
+          pujaCRUD.edit(puja);
           serviciosMgr.addNotificacion(subastaG.getIdSubasta(), "aceptada", serviciosMgr.getSystemDateTimeFormated() +"-- La puja enviada por "+
                                  postorG.getNombre()+"del articulo " +subastaG.getArticulo()+ 
                                  "con el precio de " + puja.getPrecio() + "ha sido aceptada" );  
@@ -140,13 +140,13 @@ public class SubastadorMgrBean implements SubastadorMgrRemote {
             notificaciones = notificaciones@pre->including( Notificacion )
      */ 
     public void rechazarPuja(Puja puja) throws SubastasException{
-        subastaG = subastaFacade.find(puja.getIdSubasta());
+        subastaG = subastaCRUD.find(puja.getIdSubasta());
         postorG = serviciosMgr.getPostor(puja.getIdPostor());      
         if ( puja.getPrecio() <= serviciosMgr.getPujaUltimoPrecio(puja.getIdSubasta()).getPrecio() )
            throw new SubastasException("El precio de la puja debe ser el mayor"); 
        else {
           puja.setEstado('r');
-          pujaFacade.edit(puja);
+          pujaCRUD.edit(puja);
           serviciosMgr.addNotificacion(subastaG.getIdSubasta(), "rechazada", serviciosMgr.getSystemDateTimeFormated() +"-- La puja enviada por "+
                                   postorG.getNombre()+"del articulo " +subastaG.getArticulo()+ 
                                   "con el precio de " +puja.getPrecio() + "ha sido rechazada" );  

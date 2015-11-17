@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package net.osgg.ejb.sessions.facades;
+package net.osgg.ejb.sessions.crud;
 
 import java.util.List;
 import javax.ejb.Local;
@@ -14,7 +14,7 @@ import net.osgg.ejb.entities.Postor;
  * @author omar s. gómez, 2015
  */
 @Local
-public interface PostorFacadeLocal {
+public interface PostorCRUDLocal {
 
     void create(Postor postor);
 

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package net.osgg.ejb.sessions.facades;
+package net.osgg.ejb.sessions.crud;
 
 import java.util.List;
 import javax.ejb.Stateless;
@@ -16,7 +16,7 @@ import net.osgg.ejb.entities.Subastador;
  * @author omar s. gómez, 2015
  */
 @Stateless
-public class SubastadorFacade implements SubastadorFacadeLocal {
+public class SubastadorCRUD implements SubastadorCRUDLocal {
     @PersistenceContext
     private EntityManager em;
 

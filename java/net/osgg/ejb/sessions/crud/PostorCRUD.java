@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package net.osgg.ejb.sessions.facades;
+package net.osgg.ejb.sessions.crud;
 
 import java.util.List;
 import javax.ejb.Stateless;
@@ -16,7 +16,7 @@ import net.osgg.ejb.entities.Postor;
  * @author omar s. gómez, 2015
  */
 @Stateless
-public class PostorFacade implements PostorFacadeLocal {
+public class PostorCRUD implements PostorCRUDLocal {
     @PersistenceContext
     private EntityManager em;
 

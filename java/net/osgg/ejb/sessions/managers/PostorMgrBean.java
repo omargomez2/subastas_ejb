@@ -19,9 +19,9 @@ import net.osgg.ejb.entities.Postor;
 import net.osgg.ejb.entities.Puja;
 import net.osgg.ejb.entities.RegistroSubasta;
 import net.osgg.ejb.entities.Subasta;
-import net.osgg.ejb.sessions.facades.PujaFacadeLocal;
-import net.osgg.ejb.sessions.facades.RegistroSubastaFacadeLocal;
-import net.osgg.ejb.sessions.facades.SubastaFacadeLocal;
+import net.osgg.ejb.sessions.crud.PujaCRUDLocal;
+import net.osgg.ejb.sessions.crud.RegistroSubastaCRUDLocal;
+import net.osgg.ejb.sessions.crud.SubastaCRUDLocal;
 import net.osgg.exceptions.EntradaNoValidaException;
 import net.osgg.exceptions.FechaHoraNoValidaException;
 import net.osgg.exceptions.PrecioPujaNoValidoException;
@@ -36,11 +36,11 @@ import net.osgg.exceptions.SubastasException;
 @Stateless(mappedName="PostorMgr")
 public class PostorMgrBean implements PostorMgrRemote {
     @EJB 
-    private PujaFacadeLocal pujaFacade;   
+    private PujaCRUDLocal pujaCRUD;   
     @EJB
-    private SubastaFacadeLocal subastaFacade;
+    private SubastaCRUDLocal subastaCRUD;
     @EJB
-    private RegistroSubastaFacadeLocal rSubastaFacade;
+    private RegistroSubastaCRUDLocal rSubastaCRUD;
     @EJB
     private ServiciosMgrLocal serviciosMgr;
     
@@ -73,7 +73,7 @@ public class PostorMgrBean implements PostorMgrRemote {
             throw new PrecioPujaNoValidoException("El precio de la puja debe ser mayor al anterior");
         else if ( !serviciosMgr.isPujaEnTiempo(puja) )
             throw new FechaHoraNoValidaException("La fecha y hora de la puja debe estar dentro de los tiempos de la subasta");
-        else if ( puja.getIdPostor().equals( pujaFacade.getPujaUltimoPrecio(puja.getIdSubasta()).getIdPostor() ) )  
+        else if ( puja.getIdPostor().equals( pujaCRUD.getPujaUltimoPrecio(puja.getIdSubasta()).getIdPostor() ) )  
             throw new PujaDuplicadaporPostorException("El postor no debe volver a pujar hasta que reciba un nuevo precio por otro postor");
         else if ( !serviciosMgr.isPostorDentroSubasta(puja.getIdPostor(), puja.getIdSubasta()) )
             throw new SubastasException("El Postor debe estar dentro de alguna subasta");
@@ -117,23 +117,23 @@ public class PostorMgrBean implements PostorMgrRemote {
             throw new RegistroSubastaException("El Postor ya esta dentro de la subasta");
         else if (serviciosMgr.abandonoSubasta(idPostor, idSubasta))
             throw new RegistroSubastaException("El Postor ya ha abandonado la subasta");     
-        else if (rSubastaFacade.getRegistroSubasta(idPostor, idSubasta).getId() == null){
+        else if (rSubastaCRUD.getRegistroSubasta(idPostor, idSubasta).getId() == null){
                 rSubasta = new RegistroSubasta();
                 rSubasta.setId( serviciosMgr.getUUID() );
                 rSubasta.setIdPostor(idPostor);
                 rSubasta.setIdSubasta(idSubasta);
                 rSubasta.setEstado('e');
-                rSubastaFacade.create(rSubasta);
+                rSubastaCRUD.create(rSubasta);
                 postorG = serviciosMgr.getPostor(idPostor);
-                subastaG = subastaFacade.find(idSubasta);
+                subastaG = subastaCRUD.find(idSubasta);
                 serviciosMgr.addNotificacion(idSubasta, "entrada",serviciosMgr.getSystemDateTimeFormated() +"-- El Postor "+postorG.getNombre()+
                                     " ha entrado a la subasta "+subastaG.getNombre());
         } else if ( serviciosMgr.isPostorFueraSubasta(idPostor, idSubasta)){
-                rSubasta = rSubastaFacade.getRegistroSubasta(idPostor, idSubasta);
+                rSubasta = rSubastaCRUD.getRegistroSubasta(idPostor, idSubasta);
                 rSubasta.setEstado('e');
-                rSubastaFacade.edit(rSubasta);
+                rSubastaCRUD.edit(rSubasta);
                 postorG = serviciosMgr.getPostor(idPostor);
-                subastaG = subastaFacade.find(idSubasta);
+                subastaG = subastaCRUD.find(idSubasta);
                 serviciosMgr.addNotificacion(idSubasta, "entrada",serviciosMgr.getSystemDateTimeFormated() +"-- El Postor "+postorG.getNombre()+
                                     " ha entrado a la subasta "+subastaG.getNombre());           
         }    
@@ -157,18 +157,18 @@ public class PostorMgrBean implements PostorMgrRemote {
             throw new EntradaNoValidaException("Id de subasta no debe estar en blanco");
         else if (idPostor == null )
             throw new EntradaNoValidaException("Id de postor no debe estar en blanco"); 
-        else if (rSubastaFacade.getRegistroSubasta(idPostor, idSubasta).getId() == null)
+        else if (rSubastaCRUD.getRegistroSubasta(idPostor, idSubasta).getId() == null)
             throw new RegistroSubastaException("Debe existir un idPostor e idSubasta validos en el registro de subastas");
         else if ( serviciosMgr.isPostorFueraSubasta(idPostor, idSubasta) )
             throw new RegistroSubastaException("El Postor ya ha salido de la subasta");
         else if ( serviciosMgr.abandonoSubasta(idPostor, idSubasta))
             throw new RegistroSubastaException("El Postor ya ha abandonado la subasta");
         else{
-                rSubasta = rSubastaFacade.getRegistroSubasta(idPostor, idSubasta);
+                rSubasta = rSubastaCRUD.getRegistroSubasta(idPostor, idSubasta);
                 rSubasta.setEstado('s');
-                rSubastaFacade.edit(rSubasta);
+                rSubastaCRUD.edit(rSubasta);
                 postorG = serviciosMgr.getPostor(idPostor);
-                subastaG = subastaFacade.find(idSubasta);
+                subastaG = subastaCRUD.find(idSubasta);
                 serviciosMgr.addNotificacion(idSubasta, "salida",serviciosMgr.getSystemDateTimeFormated() +"-- El Postor "+postorG.getNombre()+
                                     " ha salido de la subasta "+subastaG.getNombre());  
         } 
@@ -190,18 +190,18 @@ public class PostorMgrBean implements PostorMgrRemote {
             throw new EntradaNoValidaException("Id de subasta no debe estar en blanco");
         else if (idPostor == null )
             throw new EntradaNoValidaException("Id de postor no debe estar en blanco"); 
-        else if (rSubastaFacade.getRegistroSubasta(idPostor, idSubasta).getId() == null)
+        else if (rSubastaCRUD.getRegistroSubasta(idPostor, idSubasta).getId() == null)
             throw new RegistroSubastaException("Debe existir un idPostor e idSubasta validos en el registro de subastas");
         else if ( serviciosMgr.isPostorFueraSubasta(idPostor, idSubasta))
             throw new RegistroSubastaException("Para poder abandonar la subasta, el postor debe estar dentro de ésta");        
         else if ( serviciosMgr.abandonoSubasta(idPostor, idSubasta))
             throw new RegistroSubastaException("El Postor ya ha abandonado esta subasta"); 
         else{
-                rSubasta = rSubastaFacade.getRegistroSubasta(idPostor, idSubasta);
+                rSubasta = rSubastaCRUD.getRegistroSubasta(idPostor, idSubasta);
                 rSubasta.setEstado('a');
-                rSubastaFacade.edit(rSubasta);
+                rSubastaCRUD.edit(rSubasta);
                 postorG = serviciosMgr.getPostor(idPostor);
-                subastaG = subastaFacade.find(idSubasta);
+                subastaG = subastaCRUD.find(idSubasta);
                 serviciosMgr.addNotificacion(idSubasta, "abandono",serviciosMgr.getSystemDateTimeFormated() +"-- El Postor "+postorG.getNombre()+
                                     " ha abandonado la subasta "+subastaG.getNombre());  
         }       

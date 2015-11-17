@@ -15,7 +15,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import net.osgg.ejb.entities.Puja;
-import net.osgg.ejb.sessions.facades.PujaFacadeLocal;
+import net.osgg.ejb.sessions.crud.PujaCRUDLocal;
 
 /**
  *
@@ -27,7 +27,7 @@ import net.osgg.ejb.sessions.facades.PujaFacadeLocal;
     })
 public class NuevaPujaBean implements MessageListener {
     @EJB 
-    private PujaFacadeLocal pujaFacade;  
+    private PujaCRUDLocal pujaCRUD;  
     
     @Resource
     private MessageDrivenContext mdc;
@@ -52,7 +52,7 @@ public class NuevaPujaBean implements MessageListener {
     }
 
     private void save(Puja puja) {
-        pujaFacade.create(puja);
+        pujaCRUD.create(puja);
     }
     
 }

@@ -16,11 +16,11 @@ import net.osgg.ejb.entities.Postor;
 import net.osgg.ejb.entities.Puja;
 import net.osgg.ejb.entities.Subasta;
 import net.osgg.ejb.sessions.GenIDLocal;
-import net.osgg.ejb.sessions.facades.NotificacionFacadeLocal;
-import net.osgg.ejb.sessions.facades.PostorFacadeLocal;
-import net.osgg.ejb.sessions.facades.PujaFacadeLocal;
-import net.osgg.ejb.sessions.facades.RegistroSubastaFacadeLocal;
-import net.osgg.ejb.sessions.facades.SubastaFacadeLocal;
+import net.osgg.ejb.sessions.crud.NotificacionCRUDLocal;
+import net.osgg.ejb.sessions.crud.PostorCRUDLocal;
+import net.osgg.ejb.sessions.crud.PujaCRUDLocal;
+import net.osgg.ejb.sessions.crud.RegistroSubastaCRUDLocal;
+import net.osgg.ejb.sessions.crud.SubastaCRUDLocal;
 
 
 
@@ -32,17 +32,17 @@ import net.osgg.ejb.sessions.facades.SubastaFacadeLocal;
 public class ServiciosMgrBean implements ServiciosMgrRemote, ServiciosMgrLocal {
 
     @EJB
-    private PujaFacadeLocal pujaFacade;
+    private PujaCRUDLocal pujaCRUD;
     @EJB
-    private SubastaFacadeLocal subastaFacade;
+    private SubastaCRUDLocal subastaCRUD;
     @EJB
     private GenIDLocal genId;
     @EJB
-    private NotificacionFacadeLocal notificacionFacade;
+    private NotificacionCRUDLocal notificacionCRUD;
     @EJB
-    private PostorFacadeLocal postorFacade;
+    private PostorCRUDLocal postorCRUD;
     @EJB
-    private RegistroSubastaFacadeLocal rSubastaFacade;
+    private RegistroSubastaCRUDLocal rSubastaCRUD;
     
     private Date date;
     private DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -66,7 +66,7 @@ public class ServiciosMgrBean implements ServiciosMgrRemote, ServiciosMgrLocal {
     }   
     
     public boolean isPujaEnTiempo(Puja puja) {
-        Subasta subasta = subastaFacade.find(puja.getIdSubasta());
+        Subasta subasta = subastaCRUD.find(puja.getIdSubasta());
         if ( puja.getFechaHora() >= subasta.getFechaHoraInicio() && puja.getFechaHora() <= subasta.getFechaHoraFin() )
             return true;
         else 
@@ -74,23 +74,23 @@ public class ServiciosMgrBean implements ServiciosMgrRemote, ServiciosMgrLocal {
     }
 
     public Subasta getSubasta(String idSubasta) {
-        return subastaFacade.find(idSubasta);
+        return subastaCRUD.find(idSubasta);
     }
 
     public List <Subasta> getAllSubastas() {
-        return subastaFacade.findAll();
+        return subastaCRUD.findAll();
     }
 
     public Puja getPuja(String idPuja) {
-        return pujaFacade.find(idPuja);
+        return pujaCRUD.find(idPuja);
     }
 
     public List<Puja> getPujas(String idSubasta) {
-        return pujaFacade.getPujas(idSubasta);
+        return pujaCRUD.getPujas(idSubasta);
     }
 
     public Puja getPujaUltimoPrecio(String idSubasta) {
-        return pujaFacade.getPujaUltimoPrecio(idSubasta);
+        return pujaCRUD.getPujaUltimoPrecio(idSubasta);
     }
 
     public void addNotificacion(String idSubasta, String tipo, String texto) {
@@ -99,33 +99,33 @@ public class ServiciosMgrBean implements ServiciosMgrRemote, ServiciosMgrLocal {
         notificacion.setIdSubasta(idSubasta);
         notificacion.setDescripcion( texto  );
         notificacion.setTipo(tipo);
-        notificacionFacade.create(notificacion);
+        notificacionCRUD.create(notificacion);
     }
 
     public List<Notificacion> getNotificaciones(String idSubasta) {
-        return notificacionFacade.getNotificaciones(idSubasta);
+        return notificacionCRUD.getNotificaciones(idSubasta);
     }
 
     public Postor getPostor(String idPostor) {
-        return postorFacade.find(idPostor);
+        return postorCRUD.find(idPostor);
     }
 
     public boolean abandonoSubasta(String idPostor, String idSubasta) {               
-        if (rSubastaFacade.getRegistroSubasta(idPostor, idSubasta).getEstado() == 'a')
+        if (rSubastaCRUD.getRegistroSubasta(idPostor, idSubasta).getEstado() == 'a')
            return true;
         else 
            return false;
     }
     
     public boolean isPostorDentroSubasta(String idPostor, String idSubasta) {
-        if (rSubastaFacade.getRegistroSubasta(idPostor, idSubasta).getEstado() == 'e')
+        if (rSubastaCRUD.getRegistroSubasta(idPostor, idSubasta).getEstado() == 'e')
            return true;
         else 
            return false;
     }
     
     public boolean isPostorFueraSubasta(String idPostor, String idSubasta) {
-        if (rSubastaFacade.getRegistroSubasta(idPostor, idSubasta).getEstado() == 's')
+        if (rSubastaCRUD.getRegistroSubasta(idPostor, idSubasta).getEstado() == 's')
            return true;
         else 
            return false;

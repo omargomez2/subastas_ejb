@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package net.osgg.ejb.sessions.facades;
+package net.osgg.ejb.sessions.crud;
 
 import java.util.List;
 import javax.ejb.Stateless;
@@ -17,7 +17,7 @@ import net.osgg.ejb.entities.Notificacion;
  * @author omar s. gómez, 2015
  */
 @Stateless
-public class NotificacionFacade implements NotificacionFacadeLocal {
+public class NotificacionCRUD implements NotificacionCRUDLocal {
     @PersistenceContext
     private EntityManager em;
 
